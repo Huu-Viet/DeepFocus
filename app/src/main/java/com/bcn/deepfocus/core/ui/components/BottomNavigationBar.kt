@@ -1,4 +1,4 @@
-package com.bcn.deepfocus.core.ui
+package com.bcn.deepfocus.core.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +25,8 @@ fun BottomNavigationBar(
     navigationItem: List<NavigationItem>
 ) {
     NavigationBar(
-        modifier = modifier
+        modifier = modifier,
+        windowInsets = NavigationBarDefaults.windowInsets
     ) {
         navigationItem.forEachIndexed{ index, item ->
             NavigationBarItem(

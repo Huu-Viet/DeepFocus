@@ -1,6 +1,5 @@
-package com.bcn.deepfocus.ui.theme
+package com.bcn.deepfocus.core.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -18,31 +17,33 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = Pink80,
     background = Color(0xFF1D1B20),
     surface = Color(0xFF25232A),
-    onPrimary = Color.White,
+    onPrimary = Purple40,
     onSecondary = Color.White,
     onTertiary = Color.White,
     onBackground = Color(0xFFE6E1E5),
     onSurface = Color(0xFFE6E1E5),
+    onError = Color.Red
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    primary = Purple80,
     secondary = PurpleGrey40,
     tertiary = Pink40,
     background = Color(0xFFFEF7FF),
-    surface = Color(0xFF1C1B1F),
-    onPrimary = Color.White,
+    surface = Color(0xFFE6E1E9),
+    onPrimary = Purple40,
     onSecondary = Color.White,
     onTertiary = Color.White,
     onBackground = Color(0xFF1C1B1F),
     onSurface = Color(0xFF1C1B1F),
+    onError = Color.Red
 )
 
 @Composable
 fun DeepFocusTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">DeepFocus</string>
+    <string name="focus_time">Thời gian tập trung</string>
+    <string name="set_duration">Thiết lập thời gian</string>
+    <string name="long_focus">Tập trung</string>
+    <string name="deep_focus">Tập trung sâu</string>
+    <string name="choose_duration">Chọn thời gian</string>
 </resources>

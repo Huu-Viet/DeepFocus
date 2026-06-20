@@ -15,3 +15,17 @@ suspend fun <T> Flow<Response<T>>.collectAndHandle(
         }
     }
 }
+
+fun Int.toTimerText(): String {
+    val minutes = this / 60
+    val seconds = this % 60
+
+    return "%02d:%02d".format(
+        minutes,
+        seconds
+    )
+}
+
+fun Int.toSecond(): Int {
+    return this * 60
+}

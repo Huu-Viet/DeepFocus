@@ -16,7 +16,6 @@ fun Navigation(
     navHostController: NavHostController
 ) {
     NavHost(
-        modifier = modifier,
         navController = navHostController,
         startDestination = Route.Home().route
     ) {

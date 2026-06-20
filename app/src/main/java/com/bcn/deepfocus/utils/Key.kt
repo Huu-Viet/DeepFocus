@@ -1,0 +1,15 @@
+package com.bcn.deepfocus.utils
+
+object Key {
+    const val TIMER_DURATION = "DURATION"
+    const val TIMER_START = "START_TIMER"
+    const val TIMER_STOP = "STOP_TIMER"
+    const val TIMER_RESTART = "RESTART_TIMER"
+
+    // Notification
+    const val NOTIFICATION_TIMER_ID = 1
+
+    // Notification channel
+    const val NOTIFICATION_CHANNEL_ID = "pomodoro_channel"
+    const val NOTIFICATION_CHANNEL_NAME = "Pomodoro Timer Channel"
+}

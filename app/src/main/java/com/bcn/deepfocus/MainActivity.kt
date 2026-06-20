@@ -1,33 +1,38 @@
 package com.bcn.deepfocus
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SettingsInputComponent
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.bcn.deepfocus.core.ui.BottomNavigationBar
+import com.bcn.deepfocus.core.ui.components.BottomNavigationBar
 import com.bcn.deepfocus.navigation.Navigation
 import com.bcn.deepfocus.navigation.NavigationItem
 import com.bcn.deepfocus.navigation.Route
-import com.bcn.deepfocus.ui.theme.DeepFocusTheme
+import com.bcn.deepfocus.core.ui.theme.DeepFocusTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -52,6 +57,7 @@ class MainActivity : ComponentActivity() {
                 ),
             )
             DeepFocusTheme {
+                RequestNotificationPermissionOnStart()
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute =navBackStackEntry?.destination?.route
@@ -76,6 +82,30 @@ class MainActivity : ComponentActivity() {
                         navHostController = navController
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun RequestNotificationPermissionOnStart() {
+    val context = LocalContext.current
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        //TODO
+    }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!granted) {
+                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }
