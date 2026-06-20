@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.bcn.deepfocus.model.custom.data.local.entities.FocusSetEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FocusSetDao {
@@ -12,7 +13,7 @@ interface FocusSetDao {
     suspend fun insertFocusSet(focusSetEntity: FocusSetEntity)
 
     @Query("SELECT * FROM focus_set AS f WHERE f.id = :setId")
-    suspend fun getFocusSet(setId: String): FocusSetEntity?
+    fun getFocusSet(setId: String): Flow<FocusSetEntity?>
 
     @Query("""
         UPDATE focus_set
