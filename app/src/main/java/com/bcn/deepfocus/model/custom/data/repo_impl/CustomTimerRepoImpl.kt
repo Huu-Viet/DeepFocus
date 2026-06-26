@@ -42,6 +42,11 @@ class CustomTimerRepoImpl(
             }
             .catch { e -> emit(Response.Error(e.message ?: "Get Focus Set Error")) }
 
+    override fun watchAllFocusSets(): Flow<List<FocusSet>> =
+        focusSetDao.getAllFocusSets()
+            .map { entities ->
+                entities.map { localMapper.mapToDomain(it) }
+            }
 
     override suspend fun updateFocusSet(fixedFocusSet: FocusSet) {
         try {

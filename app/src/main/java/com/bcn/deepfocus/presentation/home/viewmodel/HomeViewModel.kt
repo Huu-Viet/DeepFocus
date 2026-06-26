@@ -2,6 +2,8 @@ package com.bcn.deepfocus.presentation.home.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bcn.deepfocus.model.custom.domain.entities.FocusSet
+import com.bcn.deepfocus.model.custom.domain.usecase.WatchAllFocusSetsUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.RestartTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.StartTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.StopTimerUseCase
@@ -9,16 +11,13 @@ import com.bcn.deepfocus.model.timer.domain.usecase.WatchTimerUseCase
 import com.bcn.deepfocus.presentation.home.model.EFocusPreset
 import com.bcn.deepfocus.presentation.home.model.TimerPhase
 import com.bcn.deepfocus.presentation.home.model.TimerUIState
-import com.bcn.deepfocus.presentation.service.TimerServiceManager
 import com.bcn.deepfocus.utils.toSecond
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,13 +27,25 @@ class HomeViewModel @Inject constructor(
     private val restartTimerUseCase: RestartTimerUseCase,
     private val stopTimerUseCase: StopTimerUseCase,
     private val watchTimerUseCase: WatchTimerUseCase,
+    private val watchAllFocusSetsUseCase: WatchAllFocusSetsUseCase
 ): ViewModel() {
-    private val _focusPreset = MutableStateFlow(EFocusPreset.DEFAULT)
-    val focusPreset = _focusPreset.asStateFlow()
+
+    // Single source of truth for active focus/break duration
+    private val _activeFocusSet = MutableStateFlow(
+        FocusSet(
+            id = EFocusPreset.DEFAULT.name,
+            focusMinute = EFocusPreset.DEFAULT.focusMinutes,
+            breakMinute = EFocusPreset.DEFAULT.breakMinutes
+        )
+    )
+    val activeFocusSet = _activeFocusSet.asStateFlow()
+
+    val customFocusSets = watchAllFocusSetsUseCase()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _timerState = MutableStateFlow(TimerUIState(
-        totalSeconds = focusPreset.value.focusMinutes.toSecond(),
-        remainingSeconds = focusPreset.value.focusMinutes.toSecond(),
+        totalSeconds = _activeFocusSet.value.focusMinute.toSecond(),
+        remainingSeconds = _activeFocusSet.value.focusMinute.toSecond(),
         isRunning = false,
         progress = 0f,
         timerPhase = TimerPhase.FOCUS
@@ -46,7 +57,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun watchTimerData() = viewModelScope.launch {
-        watchTimerUseCase().collect{ timerData ->
+        watchTimerUseCase().collect { timerData ->
             if (timerData.remainingSeconds == 0) moveToNextPhase()
             _timerState.update {
                 it.copy(
@@ -60,13 +71,14 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun moveToNextPhase() {
+        val active = _activeFocusSet.value
         _timerState.update {
             when (it.timerPhase) {
                 TimerPhase.FOCUS -> {
                     it.copy(
                         timerPhase = TimerPhase.BREAK,
-                        totalSeconds = focusPreset.value.breakMinutes.toSecond(),
-                        remainingSeconds = focusPreset.value.breakMinutes.toSecond(),
+                        totalSeconds = active.breakMinute.toSecond(),
+                        remainingSeconds = active.breakMinute.toSecond(),
                         isRunning = false
                     )
                 }
@@ -74,8 +86,8 @@ class HomeViewModel @Inject constructor(
                 TimerPhase.BREAK -> {
                     it.copy(
                         timerPhase = TimerPhase.FOCUS,
-                        totalSeconds = focusPreset.value.focusMinutes.toSecond(),
-                        remainingSeconds = focusPreset.value.focusMinutes.toSecond(),
+                        totalSeconds = active.focusMinute.toSecond(),
+                        remainingSeconds = active.focusMinute.toSecond(),
                         isRunning = false
                     )
                 }
@@ -88,9 +100,7 @@ class HomeViewModel @Inject constructor(
         if (_timerState.value.isRunning) return
 
         _timerState.update {
-            it.copy(
-                isRunning = true
-            )
+            it.copy(isRunning = true)
         }
 
         startTimerUseCase(_timerState.value.totalSeconds)
@@ -100,7 +110,7 @@ class HomeViewModel @Inject constructor(
         stopTimerUseCase()
         _timerState.update {
             it.copy(
-                remainingSeconds = focusPreset.value.focusMinutes.toSecond(),
+                remainingSeconds = _activeFocusSet.value.focusMinute.toSecond(),
                 isRunning = false,
                 progress = 0f
             )
@@ -112,14 +122,22 @@ class HomeViewModel @Inject constructor(
     }
 
     fun changeSetDuration(focusPreset: EFocusPreset) {
-        if(_timerState.value.isRunning) endSession()
-        _focusPreset.update {
-            focusPreset
-        }
+        selectFocusSet(
+            FocusSet(
+                id = focusPreset.name,
+                focusMinute = focusPreset.focusMinutes,
+                breakMinute = focusPreset.breakMinutes
+            )
+        )
+    }
+
+    fun selectFocusSet(focusSet: FocusSet) {
+        if (_timerState.value.isRunning) endSession()
+        _activeFocusSet.update { focusSet }
         _timerState.update {
             it.copy(
-                totalSeconds = focusPreset.focusMinutes.toSecond(),
-                remainingSeconds = focusPreset.focusMinutes.toSecond(),
+                totalSeconds = focusSet.focusMinute.toSecond(),
+                remainingSeconds = focusSet.focusMinute.toSecond(),
                 isRunning = false,
                 progress = 0f,
                 timerPhase = TimerPhase.FOCUS
@@ -127,4 +145,3 @@ class HomeViewModel @Inject constructor(
         }
     }
 }
-

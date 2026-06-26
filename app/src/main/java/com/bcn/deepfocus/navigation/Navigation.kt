@@ -40,7 +40,11 @@ fun Navigation(
         composable (
             route = Route.TimeCustom().route
         ) {
-            TimeCustomScreen()
+            TimeCustomScreen(
+                onBack = {
+                    navHostController.popBackStack()
+                }
+            )
         }
 
     }

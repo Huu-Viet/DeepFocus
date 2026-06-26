@@ -76,7 +76,8 @@ fun HomeScreen(
         skipPartiallyExpanded = true // to open full content in sheet
     )
     val timerState = homeVM.timerState.collectAsStateWithLifecycle()
-    val focusSet = homeVM.focusPreset.collectAsStateWithLifecycle()
+    val activeFocusSet = homeVM.activeFocusSet.collectAsStateWithLifecycle()
+    val customFocusSets = homeVM.customFocusSets.collectAsStateWithLifecycle()
     val animatedProgress by animateFloatAsState(
         targetValue = timerState.value.progress,
         label = ""
@@ -138,7 +139,7 @@ fun HomeScreen(
                 TimeCircle(
                     progress = animatedProgress,
                     remainTime = timerState.value.remainingSeconds.toTimerText(),
-                    setDuration = "25m focus / 5m break"
+                    setDuration = "${activeFocusSet.value.focusMinute}m focus / ${activeFocusSet.value.breakMinute}m break"
                 )
 
                 Spacer(Modifier.size(60.dp))
@@ -215,7 +216,7 @@ fun HomeScreen(
                     ) {
                         Text(text = stringResource(R.string.set_duration), fontSize = 18.sp)
                         Row {
-                            Text(text = "${focusSet.value.focusMinutes}m / ${focusSet.value.breakMinutes}m", fontSize = 18.sp)
+                            Text(text = "${activeFocusSet.value.focusMinute}m / ${activeFocusSet.value.breakMinute}m", fontSize = 18.sp)
                             Icon(
                                 imageVector = Icons.Default.KeyboardArrowDown,
                                 contentDescription = null
@@ -241,9 +242,13 @@ fun HomeScreen(
                             )
                             Spacer(Modifier.size(20.dp))
                             BottomSheetContent(
-                                currentFocusSet = focusSet.value,
+                                activeFocusSet = activeFocusSet.value,
+                                customFocusSets = customFocusSets.value,
                                 changeSetDuration = { preset ->
                                     homeVM.changeSetDuration(preset)
+                                },
+                                onCustomFocusSetSelected = { customSet ->
+                                    homeVM.selectFocusSet(customSet)
                                 },
                                 onContentSelected = {showBottomSheet = false},
                                 onCustomTime = {

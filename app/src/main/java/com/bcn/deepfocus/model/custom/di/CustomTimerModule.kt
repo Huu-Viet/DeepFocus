@@ -12,6 +12,7 @@ import com.bcn.deepfocus.model.custom.domain.usecase.DeleteFocusSetUseCase
 import com.bcn.deepfocus.model.custom.domain.usecase.GetFocusSetUseCase
 import com.bcn.deepfocus.model.custom.domain.usecase.SaveFocusSetUseCase
 import com.bcn.deepfocus.model.custom.domain.usecase.UpdateFocusSetUseCase
+import com.bcn.deepfocus.model.custom.domain.usecase.WatchAllFocusSetsUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -59,4 +60,9 @@ object CustomTimerModule {
     fun provideDeleteFocusSetUseCase(
         customTimerRepo: CustomTimerRepo
     ) = DeleteFocusSetUseCase(customTimerRepo)
+
+    @Provides
+    fun provideWatchAllFocusSetsUseCase(
+        customTimerRepo: CustomTimerRepo
+    ) = WatchAllFocusSetsUseCase(customTimerRepo)
 }

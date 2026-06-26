@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface CustomTimerRepo {
     suspend fun saveFocusSet(focusSet: FocusSet)
     fun getFocusSet(id: String): Flow<Response<FocusSet>>
+    fun watchAllFocusSets(): Flow<List<FocusSet>>
     suspend fun updateFocusSet(fixedFocusSet: FocusSet)
     suspend fun deleteFocusSet(id: String)
 }

@@ -8,4 +8,7 @@
     <string name="choose_duration">Chọn thời gian</string>
     <string name="custom_time">Tùy chọn thời gian</string>
     <string name="set_own_break">Tùy chỉnh thời gian nghỉ</string>
+    <string name="your_custom_set">Tùy chỉnh</string>
+    <string name="focus_minute">Tập Trung</string>
+    <string name="break_minute">Nghỉ ngơi</string>
 </resources>

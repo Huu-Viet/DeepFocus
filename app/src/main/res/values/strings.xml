@@ -7,4 +7,7 @@
     <string name="choose_duration">Choose duration</string>
     <string name="custom_time">Custom Time</string>
     <string name="set_own_break">Set your own break</string>
+    <string name="your_custom_set">Your Custom Sets</string>
+    <string name="focus_minute">Focus</string>
+    <string name="break_minute">Break</string>
 </resources>

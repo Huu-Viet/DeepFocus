@@ -16,7 +16,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -54,105 +53,92 @@ fun TimeCustomScreen(
         }
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                ),
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                title = {
-                    Text(
-                        text = "Custom Timer",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Top bar area
+        TopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background
+            ),
+            navigationIcon = {
+                IconButton(onClick = {onBack()}) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                        contentDescription = "Back"
                     )
                 }
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(top = innerPadding.calculateTopPadding())
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(Modifier.size(32.dp))
-
-            Text(
-                text = "Set your preferred focus and break duration",
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-
-            Spacer(Modifier.size(40.dp))
-
-            // Focus Minute Selector
-            MinuteSelector(
-                label = "Focus Time",
-                value = uiState.value.focusMinute,
-                minValue = 1,
-                maxValue = 180,
-                onValueChange = viewModel::onFocusMinuteChange,
-                onIncrement = viewModel::incrementFocusMinute,
-                onDecrement = viewModel::decrementFocusMinute
-            )
-
-            Spacer(Modifier.size(24.dp))
-
-            // Break Minute Selector
-            MinuteSelector(
-                label = "Break Time",
-                value = uiState.value.breakMinute,
-                minValue = 1,
-                maxValue = (uiState.value.focusMinute * 0.3f).toInt().coerceAtLeast(1),
-                onValueChange = viewModel::onBreakMinuteChange,
-                onIncrement = viewModel::incrementBreakMinute,
-                onDecrement = viewModel::decrementBreakMinute
-            )
-
-            Spacer(Modifier.weight(1f))
-
-            // Summary
-            Text(
-                text = "${uiState.value.focusMinute}m focus / ${uiState.value.breakMinute}m break",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(Modifier.size(16.dp))
-
-            // Save Button
-            Button(
-                onClick = viewModel::saveCustomFocusSet,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 32.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.onPrimary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ),
-                enabled = !uiState.value.isSaving
-            ) {
+            },
+            title = {
                 Text(
-                    text = if (uiState.value.isSaving) "Saving..." else "Save & Start",
-                    fontSize = 18.sp,
+                    text = "Custom Timer",
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
+        )
+
+        Spacer(Modifier.size(16.dp))
+
+        Text(
+            text = "Set your preferred focus and break duration",
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+        )
+
+        Spacer(Modifier.size(32.dp))
+
+        // Focus Minute Selector
+        MinuteSelector(
+            label = "Focus Time",
+            value = uiState.value.focusMinute,
+            minValue = 1,
+            maxValue = 180,
+            onValueChange = viewModel::onFocusMinuteChange,
+            onIncrement = viewModel::incrementFocusMinute,
+            onDecrement = viewModel::decrementFocusMinute
+        )
+
+        Spacer(Modifier.size(20.dp))
+
+        // Break Minute Selector
+        MinuteSelector(
+            label = "Break Time",
+            value = uiState.value.breakMinute,
+            minValue = 1,
+            maxValue = (uiState.value.focusMinute * 0.3f).toInt().coerceAtLeast(1),
+            onValueChange = viewModel::onBreakMinuteChange,
+            onIncrement = viewModel::incrementBreakMinute,
+            onDecrement = viewModel::decrementBreakMinute
+        )
+
+        Spacer(Modifier.size(24.dp))
+
+        // Save Button
+        Button(
+            onClick = {
+                viewModel.saveCustomFocusSet()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.onPrimary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            ),
+            enabled = !uiState.value.isSaving
+        ) {
+            Text(
+                text = if (uiState.value.isSaving) "Saving..." else "Save & Start",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
         }
     }
 }

@@ -15,6 +15,9 @@ interface FocusSetDao {
     @Query("SELECT * FROM focus_set AS f WHERE f.id = :setId")
     fun getFocusSet(setId: String): Flow<FocusSetEntity?>
 
+    @Query("SELECT * FROM focus_set")
+    fun getAllFocusSets(): Flow<List<FocusSetEntity>>
+
     @Query("""
         UPDATE focus_set
         SET focusMinute = :focusMinute, breakMinute = :breakMinute
