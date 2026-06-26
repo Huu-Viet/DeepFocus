@@ -39,7 +39,8 @@ import com.bcn.deepfocus.presentation.home.model.EFocusPreset
 fun BottomSheetContent(
     currentFocusSet: EFocusPreset,
     changeSetDuration: (EFocusPreset) -> Unit,
-    onContentSelected: () -> Unit
+    onContentSelected: () -> Unit,
+    onCustomTime:() -> Unit,
 ) {
     val borderColor = MaterialTheme.colorScheme.primary
 
@@ -114,8 +115,9 @@ fun BottomSheetContent(
                     cornerRadius = CornerRadius(12.dp.toPx())
                 )
             }
-            .clickable() {
+            .clickable {
                 onContentSelected()
+                onCustomTime()
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -125,13 +127,13 @@ fun BottomSheetContent(
                 .padding(horizontal = 14.dp, vertical = 8.dp)
         ) {
             Text(
-                text = "Custom Time",
+                text = stringResource(R.string.custom_time),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = "Set your own break",
+                text = stringResource(R.string.set_own_break),
                 fontSize = 16.sp
             )
         }
@@ -153,7 +155,8 @@ fun BottomSheetContentPreview() {
             changeSetDuration = { preset ->
 
             },
-            onContentSelected = {}
+            onContentSelected = {},
+            onCustomTime = {}
         )
     }
 }

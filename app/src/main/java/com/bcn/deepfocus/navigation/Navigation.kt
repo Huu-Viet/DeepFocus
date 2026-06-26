@@ -22,7 +22,7 @@ fun Navigation(
         composable (
             route = Route.Home().route
         ) {
-            HomeScreen()
+            HomeScreen(navController = navHostController)
         }
 
         composable (

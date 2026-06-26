@@ -53,10 +53,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.bcn.deepfocus.R
 import com.bcn.deepfocus.presentation.home.ui.components.TimeCircle
 import com.bcn.deepfocus.presentation.home.viewmodel.HomeViewModel
 import com.bcn.deepfocus.core.ui.theme.DeepFocusTheme
+import com.bcn.deepfocus.navigation.Route
 import com.bcn.deepfocus.presentation.home.ui.components.BottomSheetContent
 import com.bcn.deepfocus.utils.toTimerText
 
@@ -66,6 +68,7 @@ private const val TAG = "HomeScreen"
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    navController: NavController,
     homeVM: HomeViewModel = hiltViewModel()
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -242,20 +245,20 @@ fun HomeScreen(
                                 changeSetDuration = { preset ->
                                     homeVM.changeSetDuration(preset)
                                 },
-                                onContentSelected = {showBottomSheet = false}
+                                onContentSelected = {showBottomSheet = false},
+                                onCustomTime = {
+                                    navController.navigate(Route.TimeCustom().route){
+                                        // clear upper destination but still ensure retain state
+                                        popUpTo(navController.graph.startDestinationId){ saveState = true }
+                                        launchSingleTop = true //prevent duplicate same screen
+                                        restoreState = true //saveState -> restoreState when return
+                                    }
+                                }
                             )
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    DeepFocusTheme {
-        HomeScreen()
     }
 }

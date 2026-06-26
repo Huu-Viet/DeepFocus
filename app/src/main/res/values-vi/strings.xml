@@ -6,4 +6,6 @@
     <string name="long_focus">Tập trung</string>
     <string name="deep_focus">Tập trung sâu</string>
     <string name="choose_duration">Chọn thời gian</string>
+    <string name="custom_time">Tùy chọn thời gian</string>
+    <string name="set_own_break">Tùy chỉnh thời gian nghỉ</string>
 </resources>

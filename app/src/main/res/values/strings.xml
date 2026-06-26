@@ -5,4 +5,6 @@
     <string name="long_focus">Long Focus</string>
     <string name="deep_focus">Deep Focus</string>
     <string name="choose_duration">Choose duration</string>
+    <string name="custom_time">Custom Time</string>
+    <string name="set_own_break">Set your own break</string>
 </resources>
