@@ -2,7 +2,7 @@ package com.bcn.deepfocus.model.timer.data.repo_impl
 
 import com.bcn.deepfocus.model.timer.domain.entity.Timer
 import com.bcn.deepfocus.model.timer.domain.repo.TimerRepository
-import com.bcn.deepfocus.presentation.service.TimerServiceManager
+import com.bcn.deepfocus.model.timer.data.service.TimerServiceManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

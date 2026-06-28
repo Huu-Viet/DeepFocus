@@ -3,6 +3,7 @@ package com.bcn.deepfocus.presentation.home.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bcn.deepfocus.model.custom.domain.entities.FocusSet
+import com.bcn.deepfocus.model.custom.domain.usecase.DeleteFocusSetUseCase
 import com.bcn.deepfocus.model.custom.domain.usecase.WatchAllFocusSetsUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.RestartTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.StartTimerUseCase
@@ -27,7 +28,8 @@ class HomeViewModel @Inject constructor(
     private val restartTimerUseCase: RestartTimerUseCase,
     private val stopTimerUseCase: StopTimerUseCase,
     private val watchTimerUseCase: WatchTimerUseCase,
-    private val watchAllFocusSetsUseCase: WatchAllFocusSetsUseCase
+    private val watchAllFocusSetsUseCase: WatchAllFocusSetsUseCase,
+    private val deleteFocusSetUseCase: DeleteFocusSetUseCase,
 ): ViewModel() {
 
     // Single source of truth for active focus/break duration
@@ -143,5 +145,9 @@ class HomeViewModel @Inject constructor(
                 timerPhase = TimerPhase.FOCUS
             )
         }
+    }
+
+    fun deleteFocusSet(id: String) = viewModelScope.launch{
+        deleteFocusSetUseCase(id = id)
     }
 }

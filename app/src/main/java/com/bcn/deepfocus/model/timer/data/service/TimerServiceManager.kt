@@ -1,4 +1,4 @@
-package com.bcn.deepfocus.presentation.service
+package com.bcn.deepfocus.model.timer.data.service
 
 import android.content.Context
 import android.content.Intent

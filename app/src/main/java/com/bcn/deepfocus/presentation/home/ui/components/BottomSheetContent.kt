@@ -15,7 +15,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -42,8 +44,9 @@ fun BottomSheetContent(
     customFocusSets: List<FocusSet>,
     changeSetDuration: (EFocusPreset) -> Unit,
     onCustomFocusSetSelected: (FocusSet) -> Unit,
-    onContentSelected: () -> Unit,
+    onContentSelected: (focus: Int, breakTime: Int) -> Unit,
     onCustomTime: () -> Unit,
+    onDeleteItem: (id: String) -> Unit,
 ) {
     val borderColor = MaterialTheme.colorScheme.primary
     val scrollState = rememberScrollState()
@@ -60,7 +63,6 @@ fun BottomSheetContent(
                     .fillMaxWidth()
                     .clickable {
                         changeSetDuration(preset)
-                        onContentSelected()
                     }
                     .padding(vertical = 12.dp)
                     .border(
@@ -97,7 +99,6 @@ fun BottomSheetContent(
                     selected = isSelected,
                     onClick = {
                         changeSetDuration(preset)
-                        onContentSelected()
                     }
                 )
             }
@@ -108,7 +109,7 @@ fun BottomSheetContent(
             Spacer(Modifier.size(8.dp))
 
             Text(
-                text = "Your Custom Sets",
+                text = stringResource(R.string.your_custom_set),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
@@ -122,8 +123,7 @@ fun BottomSheetContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            onCustomFocusSetSelected(focusSet)
-                            onContentSelected()
+                            onContentSelected(focusSet.focusMinute, focusSet.breakMinute)
                         }
                         .padding(vertical = 12.dp)
                         .border(
@@ -141,24 +141,34 @@ fun BottomSheetContent(
                             .padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            text = "Custom",
+                            text = stringResource(R.string.custom_time),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
 
                         Text(
-                            text = "${focusSet.focusMinute} min focus ∙ ${focusSet.breakMinute} min break",
+                            text = "${focusSet.focusMinute} min " +
+                                    stringResource(R.string.focus_lowercase) +
+                                    " ∙ ${focusSet.breakMinute} min " +
+                                    stringResource(R.string.break_lowercase),
                             fontSize = 16.sp
                         )
                     }
 
-                    RadioButton(
-                        selected = isSelected,
-                        onClick = {
-                            onCustomFocusSetSelected(focusSet)
-                            onContentSelected()
+                    Row {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = {
+                                onCustomFocusSetSelected(focusSet)
+                            }
+                        )
+
+                        IconButton(
+                            onClick = {onDeleteItem(focusSet.id)}
+                        ) {
+                            Icon(imageVector = Icons.Outlined.Delete, contentDescription = null)
                         }
-                    )
+                    }
                 }
             }
         }
@@ -189,7 +199,6 @@ fun BottomSheetContent(
                     )
                 }
                 .clickable {
-                    onContentSelected()
                     onCustomTime()
                 },
             verticalAlignment = Alignment.CenterVertically,
@@ -238,8 +247,9 @@ fun BottomSheetContentPreview() {
             ),
             changeSetDuration = {},
             onCustomFocusSetSelected = {},
-            onContentSelected = {},
-            onCustomTime = {}
+            onContentSelected = {a, b -> },
+            onCustomTime = {},
+            onDeleteItem = {},
         )
     }
 }

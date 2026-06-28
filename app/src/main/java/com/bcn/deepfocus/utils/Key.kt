@@ -12,4 +12,8 @@ object Key {
     // Notification channel
     const val NOTIFICATION_CHANNEL_ID = "pomodoro_channel"
     const val NOTIFICATION_CHANNEL_NAME = "Pomodoro Timer Channel"
+
+    //CustomTimer screen params
+    const val FOCUS = "focus"
+    const val BREAK = "break"
 }

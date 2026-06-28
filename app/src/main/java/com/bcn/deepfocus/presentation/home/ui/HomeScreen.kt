@@ -1,8 +1,5 @@
 package com.bcn.deepfocus.presentation.home.ui
 
-import android.app.Activity
-import android.view.WindowManager
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,6 +21,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,23 +30,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -72,6 +69,7 @@ fun HomeScreen(
     homeVM: HomeViewModel = hiltViewModel()
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
+    var pendingDeleteId by rememberSaveable { mutableStateOf<String?>(null) }
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true // to open full content in sheet
     )
@@ -225,6 +223,22 @@ fun HomeScreen(
                     }
                 }
 
+                pendingDeleteId?.let { id ->
+                    AlertDialog(
+                        onDismissRequest = {pendingDeleteId = null},
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    homeVM.deleteFocusSet(id)
+                                    pendingDeleteId = null
+                                }
+                            ) {
+                                Text(stringResource(R.string.delete))
+                            }
+                        }
+                    )
+                }
+
                 if (showBottomSheet) {
                     ModalBottomSheet(
                         onDismissRequest = {
@@ -246,18 +260,31 @@ fun HomeScreen(
                                 customFocusSets = customFocusSets.value,
                                 changeSetDuration = { preset ->
                                     homeVM.changeSetDuration(preset)
+                                    showBottomSheet = false
                                 },
                                 onCustomFocusSetSelected = { customSet ->
                                     homeVM.selectFocusSet(customSet)
+                                    showBottomSheet = false
                                 },
-                                onContentSelected = {showBottomSheet = false},
+                                onContentSelected = { focusTime, breakTime ->
+                                    showBottomSheet = false
+                                    navController.navigate(Route.TimeCustom().putArgs(focus = focusTime, breakTime = breakTime)){
+                                        popUpTo(navController.graph.startDestinationId){ saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
                                 onCustomTime = {
+                                    showBottomSheet = false
                                     navController.navigate(Route.TimeCustom().route){
                                         // clear upper destination but still ensure retain state
                                         popUpTo(navController.graph.startDestinationId){ saveState = true }
                                         launchSingleTop = true //prevent duplicate same screen
                                         restoreState = true //saveState -> restoreState when return
                                     }
+                                },
+                                onDeleteItem = { id ->
+                                    pendingDeleteId = id
                                 }
                             )
                         }

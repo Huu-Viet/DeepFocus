@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DeepFocus">
         <service
-            android:name=".presentation.service.TimerForegroundService"
+            android:name=".model.timer.data.service.TimerForegroundService"
             android:foregroundServiceType="specialUse"
             android:exported="false"/>
 

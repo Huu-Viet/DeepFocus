@@ -6,7 +6,7 @@ import com.bcn.deepfocus.model.timer.domain.usecase.RestartTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.StartTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.StopTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.WatchTimerUseCase
-import com.bcn.deepfocus.presentation.service.TimerServiceManager
+import com.bcn.deepfocus.model.timer.data.service.TimerServiceManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

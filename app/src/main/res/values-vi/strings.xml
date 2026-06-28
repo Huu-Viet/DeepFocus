@@ -9,6 +9,12 @@
     <string name="custom_time">Tùy chọn thời gian</string>
     <string name="set_own_break">Tùy chỉnh thời gian nghỉ</string>
     <string name="your_custom_set">Tùy chỉnh</string>
-    <string name="focus_minute">Tập Trung</string>
-    <string name="break_minute">Nghỉ ngơi</string>
+    <string name="focus_lowercase">tập trung</string>
+    <string name="break_lowercase">nghỉ</string>
+
+    <!--  ACTION  -->
+    <string name="add">Thêm</string>
+    <string name="update">Cập nhật</string>
+    <string name="delete">Xóa</string>
+    <string name="search">Tìm kiếm</string>
 </resources>

@@ -1,7 +1,7 @@
 package com.bcn.deepfocus.core.di
 
 import android.content.Context
-import com.bcn.deepfocus.presentation.service.TimerServiceManager
+import com.bcn.deepfocus.model.timer.data.service.TimerServiceManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

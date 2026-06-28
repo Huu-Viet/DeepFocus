@@ -8,6 +8,13 @@
     <string name="custom_time">Custom Time</string>
     <string name="set_own_break">Set your own break</string>
     <string name="your_custom_set">Your Custom Sets</string>
-    <string name="focus_minute">Focus</string>
-    <string name="break_minute">Break</string>
+    <string name="focus_lowercase">focus</string>
+    <string name="break_lowercase">break</string>
+
+    <!--  ACTION  -->
+    <string name="add">Add</string>
+    <string name="update">Update</string>
+    <string name="delete">Delete</string>
+    <string name="search">Search</string>
+
 </resources>

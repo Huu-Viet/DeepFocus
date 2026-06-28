@@ -1,4 +1,4 @@
-package com.bcn.deepfocus.presentation.service
+package com.bcn.deepfocus.model.timer.data.service
 
 import android.app.Notification
 import android.app.Service
@@ -14,8 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject

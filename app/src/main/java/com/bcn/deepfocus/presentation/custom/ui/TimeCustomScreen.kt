@@ -1,6 +1,7 @@
 package com.bcn.deepfocus.presentation.custom.ui
 
 import android.widget.Toast
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,8 +41,12 @@ private const val TAG = "TimeCustomScreen"
 @Composable
 fun TimeCustomScreen(
     onBack: () -> Unit = {},
+    focusMinute: Int? = null,
+    breakMinute: Int? = null,
     viewModel: TimeCustomViewModel = hiltViewModel()
 ) {
+    focusMinute?.let { viewModel.onFocusMinuteChange(it) }
+    breakMinute?.let { viewModel.onBreakMinuteChange(it) }
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
