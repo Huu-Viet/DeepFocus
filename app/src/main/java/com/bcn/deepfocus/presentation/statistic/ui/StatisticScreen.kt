@@ -1,4 +1,4 @@
-package com.bcn.deepfocus.presentation.history.ui
+package com.bcn.deepfocus.presentation.statistic.ui
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

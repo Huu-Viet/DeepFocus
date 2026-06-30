@@ -1,5 +1,6 @@
 package com.bcn.deepfocus.model.timer.domain.repo
 
+import com.bcn.deepfocus.model.statistic.domain.entities.FocusSession
 import com.bcn.deepfocus.model.timer.domain.entity.Timer
 import kotlinx.coroutines.flow.Flow
 

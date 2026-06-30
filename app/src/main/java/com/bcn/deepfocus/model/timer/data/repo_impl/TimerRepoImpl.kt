@@ -1,5 +1,7 @@
 package com.bcn.deepfocus.model.timer.data.repo_impl
 
+import com.bcn.deepfocus.model.statistic.domain.entities.FocusSession
+import com.bcn.deepfocus.model.statistic.domain.usecase.SaveFocusSessionUseCase
 import com.bcn.deepfocus.model.timer.domain.entity.Timer
 import com.bcn.deepfocus.model.timer.domain.entity.TimerPhase
 import com.bcn.deepfocus.model.timer.domain.repo.TimerRepository
@@ -9,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class TimerRepoImpl(
-    private val timerServiceManager: TimerServiceManager
+    private val timerServiceManager: TimerServiceManager,
 ): TimerRepository {
     private val _timerData = MutableStateFlow(
             Timer(

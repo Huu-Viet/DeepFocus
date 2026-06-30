@@ -8,7 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.bcn.deepfocus.presentation.custom.ui.TimeCustomScreen
-import com.bcn.deepfocus.presentation.history.ui.StatisticScreen
+import com.bcn.deepfocus.presentation.statistic.ui.StatisticScreen
 import com.bcn.deepfocus.presentation.home.ui.HomeScreen
 import com.bcn.deepfocus.presentation.setting.ui.SettingScreen
 import com.bcn.deepfocus.utils.Key
