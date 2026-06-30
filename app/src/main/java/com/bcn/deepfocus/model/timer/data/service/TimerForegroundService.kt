@@ -6,6 +6,8 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.bcn.deepfocus.R
+import com.bcn.deepfocus.model.timer.domain.entity.Timer
+import com.bcn.deepfocus.model.timer.domain.entity.TimerPhase
 import com.bcn.deepfocus.model.timer.domain.repo.TimerRepository
 import com.bcn.deepfocus.utils.Key
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,6 +25,15 @@ class TimerForegroundService: Service() {
     @Inject
     lateinit var timerRepo: TimerRepository
     private var timerJob: Job? = null
+    private var sessionState = Timer(
+        focusSeconds = 25 * 60,
+        breakSeconds = 5 * 60,
+        totalSeconds = 25 * 60,
+        remainingSeconds = 25 * 60,
+        isRunning = false,
+        timerPhase = TimerPhase.FOCUS,
+        completedCycles = 0
+    )
     private val serviceScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Default
     )
@@ -32,15 +43,16 @@ class TimerForegroundService: Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val time = intent?.getIntExtra(Key.TIMER_DURATION, 0)
         val action = intent?.action
         when(action) {
             Key.TIMER_START -> {
+                val focusSeconds = intent.getIntExtra(Key.TIMER_FOCUS_DURATION, 25 * 60)
+                val breakSeconds = intent.getIntExtra(Key.TIMER_BREAK_DURATION, 5 * 60)
                 startForeground(
                     Key.NOTIFICATION_TIMER_ID,
-                    createNotification(time ?: 25 )
+                    createNotification(focusSeconds)
                 )
-                startTimer(time ?: (25 * 60))
+                startTimer(focusSeconds, breakSeconds)
             }
 
             Key.TIMER_STOP -> {
@@ -48,7 +60,7 @@ class TimerForegroundService: Service() {
             }
 
             Key.TIMER_RESTART -> {
-                startTimer(time ?: (25 * 60))
+                restartCurrentPhase()
             }
         }
         return START_NOT_STICKY
@@ -74,28 +86,81 @@ class TimerForegroundService: Service() {
             .build()
     }
 
-    private fun startTimer(duration: Int) {
+    private fun startTimer(focusSeconds: Int, breakSeconds: Int) {
         timerJob?.cancel()
+        sessionState = Timer(
+            focusSeconds = focusSeconds,
+            breakSeconds = breakSeconds,
+            totalSeconds = focusSeconds,
+            remainingSeconds = focusSeconds,
+            isRunning = true,
+            timerPhase = TimerPhase.FOCUS,
+            completedCycles = 0
+        )
 
         timerJob = serviceScope.launch {
-            var remaining = duration
+            timerRepo.updateTimer(sessionState)
 
-            timerRepo.updateTime(remaining)
-
-            while (isActive && remaining > 0) {
+            while (isActive) {
                 delay(1000)
 
-                remaining--
+                val remaining = sessionState.remainingSeconds - 1
 
-                timerRepo.updateTime(remaining)
+                sessionState = if (remaining > 0) {
+                    sessionState.copy(
+                        remainingSeconds = remaining,
+                        isRunning = true
+                    )
+                } else {
+                    moveToNextPhase()
+                }
+
+                timerRepo.updateTimer(sessionState)
 
 //                updateNotification(remaining)
             }
         }
     }
 
+    private fun restartCurrentPhase() {
+        val phaseDuration = when (sessionState.timerPhase) {
+            TimerPhase.FOCUS -> sessionState.focusSeconds
+            TimerPhase.BREAK -> sessionState.breakSeconds
+        }
+        sessionState = sessionState.copy(
+            totalSeconds = phaseDuration,
+            remainingSeconds = phaseDuration,
+            isRunning = true
+        )
+        timerRepo.updateTimer(sessionState)
+    }
+
+    private fun moveToNextPhase(): Timer {
+        return when (sessionState.timerPhase) {
+            TimerPhase.FOCUS -> sessionState.copy(
+                timerPhase = TimerPhase.BREAK,
+                totalSeconds = sessionState.breakSeconds,
+                remainingSeconds = sessionState.breakSeconds,
+                isRunning = true
+            )
+
+            TimerPhase.BREAK -> sessionState.copy(
+                timerPhase = TimerPhase.FOCUS,
+                totalSeconds = sessionState.focusSeconds,
+                remainingSeconds = sessionState.focusSeconds,
+                isRunning = true,
+                completedCycles = sessionState.completedCycles + 1
+            )
+        }
+    }
+
     private fun stopTimer() {
         timerJob?.cancel()
+        sessionState = sessionState.copy(
+            remainingSeconds = sessionState.totalSeconds,
+            isRunning = false
+        )
+        timerRepo.updateTimer(sessionState)
 
         stopForeground(STOP_FOREGROUND_REMOVE)
 

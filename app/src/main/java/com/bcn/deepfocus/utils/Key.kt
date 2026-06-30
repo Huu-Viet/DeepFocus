@@ -2,6 +2,8 @@ package com.bcn.deepfocus.utils
 
 object Key {
     const val TIMER_DURATION = "DURATION"
+    const val TIMER_FOCUS_DURATION = "FOCUS_DURATION"
+    const val TIMER_BREAK_DURATION = "BREAK_DURATION"
     const val TIMER_START = "START_TIMER"
     const val TIMER_STOP = "STOP_TIMER"
     const val TIMER_RESTART = "RESTART_TIMER"

@@ -9,6 +9,7 @@ import com.bcn.deepfocus.model.timer.domain.usecase.RestartTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.StartTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.StopTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.WatchTimerUseCase
+import com.bcn.deepfocus.model.timer.domain.entity.TimerPhase as DomainTimerPhase
 import com.bcn.deepfocus.presentation.home.model.EFocusPreset
 import com.bcn.deepfocus.presentation.home.model.TimerPhase
 import com.bcn.deepfocus.presentation.home.model.TimerUIState
@@ -60,42 +61,16 @@ class HomeViewModel @Inject constructor(
 
     private fun watchTimerData() = viewModelScope.launch {
         watchTimerUseCase().collect { timerData ->
-            if (timerData.remainingSeconds == 0) moveToNextPhase()
             _timerState.update {
                 it.copy(
                     totalSeconds = timerData.totalSeconds,
                     remainingSeconds = timerData.remainingSeconds,
                     progress = 1f - (timerData.remainingSeconds.toFloat() / timerData.totalSeconds),
-                    isRunning = timerData.isRunning
+                    isRunning = timerData.isRunning,
+                    timerPhase = timerData.timerPhase.toUiPhase()
                 )
             }
         }
-    }
-
-    private fun moveToNextPhase() {
-        val active = _activeFocusSet.value
-        _timerState.update {
-            when (it.timerPhase) {
-                TimerPhase.FOCUS -> {
-                    it.copy(
-                        timerPhase = TimerPhase.BREAK,
-                        totalSeconds = active.breakMinute.toSecond(),
-                        remainingSeconds = active.breakMinute.toSecond(),
-                        isRunning = false
-                    )
-                }
-
-                TimerPhase.BREAK -> {
-                    it.copy(
-                        timerPhase = TimerPhase.FOCUS,
-                        totalSeconds = active.focusMinute.toSecond(),
-                        remainingSeconds = active.focusMinute.toSecond(),
-                        isRunning = false
-                    )
-                }
-            }
-        }
-        start()
     }
 
     fun start() {
@@ -105,22 +80,18 @@ class HomeViewModel @Inject constructor(
             it.copy(isRunning = true)
         }
 
-        startTimerUseCase(_timerState.value.totalSeconds)
+        startTimerUseCase(
+            _activeFocusSet.value.focusMinute.toSecond(),
+            _activeFocusSet.value.breakMinute.toSecond()
+        )
     }
 
     fun endSession() {
         stopTimerUseCase()
-        _timerState.update {
-            it.copy(
-                remainingSeconds = _activeFocusSet.value.focusMinute.toSecond(),
-                isRunning = false,
-                progress = 0f
-            )
-        }
     }
 
     fun reset() {
-        restartTimerUseCase(_timerState.value.totalSeconds)
+        restartTimerUseCase()
     }
 
     fun changeSetDuration(focusPreset: EFocusPreset) {
@@ -149,5 +120,12 @@ class HomeViewModel @Inject constructor(
 
     fun deleteFocusSet(id: String) = viewModelScope.launch{
         deleteFocusSetUseCase(id = id)
+    }
+
+    private fun DomainTimerPhase.toUiPhase(): TimerPhase {
+        return when (this) {
+            DomainTimerPhase.FOCUS -> TimerPhase.FOCUS
+            DomainTimerPhase.BREAK -> TimerPhase.BREAK
+        }
     }
 }

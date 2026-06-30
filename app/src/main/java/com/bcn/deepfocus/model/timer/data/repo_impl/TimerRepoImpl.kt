@@ -1,6 +1,7 @@
 package com.bcn.deepfocus.model.timer.data.repo_impl
 
 import com.bcn.deepfocus.model.timer.domain.entity.Timer
+import com.bcn.deepfocus.model.timer.domain.entity.TimerPhase
 import com.bcn.deepfocus.model.timer.domain.repo.TimerRepository
 import com.bcn.deepfocus.model.timer.data.service.TimerServiceManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,31 +13,34 @@ class TimerRepoImpl(
 ): TimerRepository {
     private val _timerData = MutableStateFlow(
             Timer(
+                focusSeconds = 25 * 60,
+                breakSeconds = 5 * 60,
                 totalSeconds = 25 * 60,
                 remainingSeconds = 25 * 60,
-                isRunning = false
+                isRunning = false,
+                timerPhase = TimerPhase.FOCUS,
+                completedCycles = 0
             )
     )
     override val timerData = _timerData.asStateFlow()
 
-    override fun updateTime(remainingSeconds: Int) {
-        _timerData.update {
-            it.copy(
-                remainingSeconds = remainingSeconds,
-                isRunning = remainingSeconds > 0
-            )
-        }
+    override fun updateTimer(timer: Timer) {
+        _timerData.update { timer }
     }
 
-    override fun start(duration: Int) {
+    override fun start(focusSeconds: Int, breakSeconds: Int) {
         _timerData.update {
             it.copy(
-                totalSeconds = duration,
-                remainingSeconds = duration,
-                isRunning = true
+                focusSeconds = focusSeconds,
+                breakSeconds = breakSeconds,
+                totalSeconds = focusSeconds,
+                remainingSeconds = focusSeconds,
+                isRunning = true,
+                timerPhase = TimerPhase.FOCUS,
+                completedCycles = 0
             )
         }
-        timerServiceManager.startTimer(duration)
+        timerServiceManager.startTimer(focusSeconds, breakSeconds)
     }
 
     override fun endSession() {
@@ -47,7 +51,7 @@ class TimerRepoImpl(
         timerServiceManager.stopTimer()
     }
 
-    override fun restart(duration: Int) {
-        timerServiceManager.restart(duration)
+    override fun restart() {
+        timerServiceManager.restart()
     }
 }

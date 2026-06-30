@@ -5,8 +5,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface TimerRepository {
     val timerData: Flow<Timer>
-    fun updateTime(remainingSeconds: Int)
-    fun start(duration: Int)
+    fun updateTimer(timer: Timer)
+    fun start(focusSeconds: Int, breakSeconds: Int)
     fun endSession()
-    fun restart(duration: Int)
+    fun restart()
 }

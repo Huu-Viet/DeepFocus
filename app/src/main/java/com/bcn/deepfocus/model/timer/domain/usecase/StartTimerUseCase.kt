@@ -5,7 +5,7 @@ import com.bcn.deepfocus.model.timer.domain.repo.TimerRepository
 class StartTimerUseCase(
     private val timerRepo: TimerRepository
 ) {
-    operator fun invoke(duration: Int) {
-        timerRepo.start(duration)
+    operator fun invoke(focusSeconds: Int, breakSeconds: Int) {
+        timerRepo.start(focusSeconds, breakSeconds)
     }
 }
