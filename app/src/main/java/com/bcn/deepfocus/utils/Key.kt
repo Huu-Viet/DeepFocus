@@ -7,6 +7,7 @@ object Key {
     const val TIMER_START = "START_TIMER"
     const val TIMER_STOP = "STOP_TIMER"
     const val TIMER_RESTART = "RESTART_TIMER"
+    const val ID = "id"
 
     // Notification
     const val NOTIFICATION_TIMER_ID = 1

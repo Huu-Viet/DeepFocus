@@ -8,7 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.bcn.deepfocus.presentation.custom.ui.TimeCustomScreen
-import com.bcn.deepfocus.presentation.history.ui.HistoryScreen
+import com.bcn.deepfocus.presentation.history.ui.StatisticScreen
 import com.bcn.deepfocus.presentation.home.ui.HomeScreen
 import com.bcn.deepfocus.presentation.setting.ui.SettingScreen
 import com.bcn.deepfocus.utils.Key
@@ -29,9 +29,9 @@ fun Navigation(
         }
 
         composable (
-            route = Route.History().route
+            route = Route.Statistic().route
         ) {
-            HistoryScreen()
+            StatisticScreen()
         }
 
         composable (
@@ -43,15 +43,23 @@ fun Navigation(
         composable (
             route = Route.TimeCustom().routeWithArgs,
             arguments = listOf(
-                navArgument(Key.FOCUS) {type = NavType.IntType},
-                navArgument(Key.BREAK) {type = NavType.IntType},
+                navArgument(Key.FOCUS) {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument(Key.BREAK) {
+                    type = NavType.StringType
+                    nullable = true
+                },
             )
         ) { navBackStackEntry ->
-            val focus = navBackStackEntry.arguments?.getInt(Key.FOCUS)
-            val breakTime = navBackStackEntry.arguments?.getInt(Key.BREAK)
+            val focus = navBackStackEntry.arguments?.getString(Key.FOCUS)
+            val breakTime = navBackStackEntry.arguments?.getString(Key.BREAK)
+            val id = navBackStackEntry.arguments?.getString(Key.ID)
             TimeCustomScreen(
-                focusMinute = focus,
-                breakMinute = breakTime,
+                focusMinute = focus?.toInt(),
+                breakMinute = breakTime?.toInt(),
+                id = id,
                 onBack = {
                     navHostController.popBackStack()
                 }

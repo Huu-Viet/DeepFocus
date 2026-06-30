@@ -44,7 +44,7 @@ fun BottomSheetContent(
     customFocusSets: List<FocusSet>,
     changeSetDuration: (EFocusPreset) -> Unit,
     onCustomFocusSetSelected: (FocusSet) -> Unit,
-    onContentSelected: (focus: Int, breakTime: Int) -> Unit,
+    onContentSelected: (FocusSet) -> Unit,
     onCustomTime: () -> Unit,
     onDeleteItem: (id: String) -> Unit,
 ) {
@@ -123,7 +123,7 @@ fun BottomSheetContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            onContentSelected(focusSet.focusMinute, focusSet.breakMinute)
+                            onContentSelected(focusSet)
                         }
                         .padding(vertical = 12.dp)
                         .border(
@@ -247,7 +247,7 @@ fun BottomSheetContentPreview() {
             ),
             changeSetDuration = {},
             onCustomFocusSetSelected = {},
-            onContentSelected = {a, b -> },
+            onContentSelected = {a -> },
             onCustomTime = {},
             onDeleteItem = {},
         )

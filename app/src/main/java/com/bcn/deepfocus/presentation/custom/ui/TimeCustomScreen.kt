@@ -43,12 +43,16 @@ fun TimeCustomScreen(
     onBack: () -> Unit = {},
     focusMinute: Int? = null,
     breakMinute: Int? = null,
+    id: String? = null,
     viewModel: TimeCustomViewModel = hiltViewModel()
 ) {
-    focusMinute?.let { viewModel.onFocusMinuteChange(it) }
-    breakMinute?.let { viewModel.onBreakMinuteChange(it) }
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    LaunchedEffect(focusMinute, breakMinute) {
+        focusMinute?.let { viewModel.onFocusMinuteChange(it) }
+        breakMinute?.let { viewModel.onBreakMinuteChange(it) }
+    }
 
     // Show toast when warning message appears
     LaunchedEffect(uiState.value.warningMessage) {
@@ -126,7 +130,9 @@ fun TimeCustomScreen(
         // Save Button
         Button(
             onClick = {
-                viewModel.saveCustomFocusSet()
+                if (id == null) viewModel.saveCustomFocusSet()
+                else viewModel.updateCustomFocusSet(id)
+                onBack()
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -139,7 +145,8 @@ fun TimeCustomScreen(
             enabled = !uiState.value.isSaving
         ) {
             Text(
-                text = if (uiState.value.isSaving) "Saving..." else "Save & Start",
+                text = if (uiState.value.isSaving) "..."
+                else if (id == null) "Save" else "Update",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 8.dp)

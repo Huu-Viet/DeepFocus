@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.rounded.HourglassTop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -116,7 +117,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.HourglassTop,
+                            imageVector = Icons.Rounded.HourglassTop,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
@@ -266,9 +267,14 @@ fun HomeScreen(
                                     homeVM.selectFocusSet(customSet)
                                     showBottomSheet = false
                                 },
-                                onContentSelected = { focusTime, breakTime ->
+                                onContentSelected = { focusSet ->
                                     showBottomSheet = false
-                                    navController.navigate(Route.TimeCustom().putArgs(focus = focusTime, breakTime = breakTime)){
+                                    navController.navigate(
+                                        Route.TimeCustom().putArgs(
+                                            focus = focusSet.focusMinute,
+                                            breakTime = focusSet.breakMinute,
+                                            id = focusSet.id)
+                                    ){
                                         popUpTo(navController.graph.startDestinationId){ saveState = true }
                                         launchSingleTop = true
                                         restoreState = true

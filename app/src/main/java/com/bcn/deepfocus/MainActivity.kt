@@ -12,9 +12,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.InsertChart
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,17 +42,17 @@ class MainActivity : ComponentActivity() {
             val navigationItems = listOf(
                 NavigationItem(
                     title = "Home",
-                    icon = Icons.Default.Home,
+                    icon = Icons.Rounded.Home,
                     route = Route.Home().route
                 ),
                 NavigationItem(
-                    title = "History",
-                    icon = Icons.Default.History,
-                    route = Route.History().route
+                    title = "Statistic",
+                    icon = Icons.Rounded.InsertChart,
+                    route = Route.Statistic().route
                 ),
                 NavigationItem(
                     title = "Setting",
-                    icon = Icons.Default.Settings,
+                    icon = Icons.Rounded.Settings,
                     route = Route.Setting().route
                 ),
             )

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bcn.deepfocus.model.custom.domain.entities.FocusSet
 import com.bcn.deepfocus.model.custom.domain.usecase.SaveFocusSetUseCase
+import com.bcn.deepfocus.model.custom.domain.usecase.UpdateFocusSetUseCase
 import com.bcn.deepfocus.presentation.custom.model.CustomTimerUIState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TimeCustomViewModel @Inject constructor(
-    private val saveFocusSetUseCase: SaveFocusSetUseCase
+    private val saveFocusSetUseCase: SaveFocusSetUseCase,
+    private val updateFocusSetUseCase: UpdateFocusSetUseCase,
 ) : ViewModel() {
 
     companion object {
@@ -122,6 +124,20 @@ class TimeCustomViewModel @Inject constructor(
                     isSaved = true
                 )
             }
+        }
+    }
+
+    fun updateCustomFocusSet(id: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+
+            val focusSet = FocusSet(
+                id = id,
+                focusMinute = _uiState.value.focusMinute,
+                breakMinute = _uiState.value.breakMinute
+            )
+
+            updateFocusSetUseCase(focusSet)
         }
     }
 
