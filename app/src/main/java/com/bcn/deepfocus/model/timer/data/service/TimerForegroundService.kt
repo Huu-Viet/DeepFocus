@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.bcn.deepfocus.R
 import com.bcn.deepfocus.model.statistic.domain.entities.FocusSession
@@ -32,7 +31,7 @@ class TimerForegroundService: Service() {
     @Inject
     lateinit var statisticRepo: StatisticRepository
     private var timerJob: Job? = null
-    private lateinit var runningSession: FocusSession
+    private var runningSession: FocusSession? = null
     private var sessionState = Timer(
         focusSeconds = 25 * 60,
         breakSeconds = 5 * 60,
@@ -60,7 +59,6 @@ class TimerForegroundService: Service() {
                     Key.NOTIFICATION_TIMER_ID,
                     createNotification(focusSeconds)
                 )
-                initRunningSession()
                 startTimer(focusSeconds, breakSeconds)
             }
 
@@ -81,8 +79,8 @@ class TimerForegroundService: Service() {
         super.onDestroy()
     }
 
-    private fun initRunningSession() {
-        runningSession = FocusSession(
+    private fun createRunningSession(): FocusSession {
+        return FocusSession(
             startAtMillis = System.currentTimeMillis(),
             localDate = LocalDate.now().toString()
         )
@@ -105,6 +103,9 @@ class TimerForegroundService: Service() {
 
     private fun startTimer(focusSeconds: Int, breakSeconds: Int) {
         timerJob?.cancel()
+        val initialSession = createRunningSession()
+        runningSession = initialSession
+
         sessionState = Timer(
             focusSeconds = focusSeconds,
             breakSeconds = breakSeconds,
@@ -116,6 +117,9 @@ class TimerForegroundService: Service() {
         )
 
         timerJob = serviceScope.launch {
+            val sessionId = statisticRepo.saveFocusSession(initialSession)
+            runningSession = initialSession.copy(id = sessionId)
+
             timerRepo.updateTimer(sessionState)
 
             while (isActive) {
@@ -129,19 +133,10 @@ class TimerForegroundService: Service() {
                         isRunning = true
                     )
                 } else {
+                    runningSession = runningSession
+                        ?.addCompletedPhase(sessionState)
+                        ?.also { statisticRepo.updateFocusSession(it) }
                     moveToNextPhase()
-                }
-
-
-                runningSession = if (sessionState.timerPhase == TimerPhase.BREAK) {
-                    runningSession.copy(
-                        totalFocusSeconds = runningSession.totalFocusSeconds + focusSeconds,
-                    )
-                } else {
-                    runningSession.copy(
-                        totalBreakSeconds = runningSession.totalBreakSeconds + breakSeconds,
-                        completedCycles = runningSession.completedCycles + 1
-                    )
                 }
 
                 timerRepo.updateTimer(sessionState)
@@ -185,24 +180,58 @@ class TimerForegroundService: Service() {
 
     private fun stopTimer() {
         timerJob?.cancel()
+        val finishedSession = runningSession
+            ?.addElapsedCurrentPhase(sessionState)
+            ?.copy(endAtMillis = System.currentTimeMillis())
+
         sessionState = sessionState.copy(
             remainingSeconds = sessionState.totalSeconds,
             isRunning = false
         )
         timerRepo.updateTimer(sessionState)
+
         serviceScope.launch {
-            val finishedSession = runningSession.copy(
-                endAtMillis = System.currentTimeMillis()
-            )
-            statisticRepo.saveFocusSession(finishedSession)
+            finishedSession?.let { session ->
+                if (session.id == 0L) {
+                    statisticRepo.saveFocusSession(session)
+                } else {
+                    statisticRepo.updateFocusSession(session)
+                }
+            }
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
         }
-
-        stopForeground(STOP_FOREGROUND_REMOVE)
-
-        stopSelf()
     }
 
     private fun updateNotification(remaining: Int) {
         TODO("Not yet implemented")
+    }
+
+    private fun FocusSession.addCompletedPhase(timer: Timer): FocusSession {
+        return when (timer.timerPhase) {
+            TimerPhase.FOCUS -> copy(
+                totalFocusSeconds = totalFocusSeconds + timer.totalSeconds
+            )
+
+            TimerPhase.BREAK -> copy(
+                totalBreakSeconds = totalBreakSeconds + timer.totalSeconds,
+                completedCycles = completedCycles + 1
+            )
+        }
+    }
+
+    private fun FocusSession.addElapsedCurrentPhase(timer: Timer): FocusSession {
+        val elapsedSeconds = (timer.totalSeconds - timer.remainingSeconds).coerceAtLeast(0)
+        if (elapsedSeconds == 0) return this
+
+        return when (timer.timerPhase) {
+            TimerPhase.FOCUS -> copy(
+                totalFocusSeconds = totalFocusSeconds + elapsedSeconds
+            )
+
+            TimerPhase.BREAK -> copy(
+                totalBreakSeconds = totalBreakSeconds + elapsedSeconds
+            )
+        }
     }
 }

@@ -9,8 +9,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.InsertChart
@@ -21,8 +25,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bcn.deepfocus.core.ui.components.BottomNavigationBar
@@ -63,7 +70,6 @@ class MainActivity : ComponentActivity() {
                 val currentRoute =navBackStackEntry?.destination?.route
 
                 Scaffold(
-                    modifier = Modifier.fillMaxSize(),
                     bottomBar = {
                         currentRoute?.let {
                             //put screens that don't need navigation bar into quotation mark
@@ -78,7 +84,7 @@ class MainActivity : ComponentActivity() {
                     }
                 ) { innerPadding ->
                     Navigation(
-                        modifier = Modifier.padding(innerPadding),
+                        modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
                         navHostController = navController
                     )
                 }

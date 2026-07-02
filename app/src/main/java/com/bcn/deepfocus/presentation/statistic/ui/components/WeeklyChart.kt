@@ -1,15 +1,24 @@
 package com.bcn.deepfocus.presentation.statistic.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -34,23 +43,40 @@ fun WeeklyChart(
     modifier: Modifier = Modifier,
     chartData: List<ChartPoint>
 ) {
-    val max = chartData.maxOf { it.value }
+    if (chartData.isEmpty()) return
+
+    val max = chartData.maxOf { it.value }.coerceAtLeast(1f)
+    //interpolate value by time so that canvas can draw single frame when value change (composition phase)
+    val animatedChartData = chartData.map { point ->
+        val animatedValue by animateFloatAsState(
+            targetValue = point.value,
+            animationSpec = tween(durationMillis = 650),
+            label = "weeklyChartValue"
+        )
+
+        point.copy(value = animatedValue)
+    }
     val scale = calculateAxisScale(max)
     val textStyle = TextStyle(
         fontSize = 10.sp,
-        color = Color.Black,
+        color = MaterialTheme.colorScheme.onSurface
     )
     val textMeasurer = rememberTextMeasurer()
 
-    Row {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(color = MaterialTheme.colorScheme.surface)
+    ) {
         Column(
             modifier = Modifier
                 .width(24.dp)
         ) {
             Canvas(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)
+                    .padding(top = 12.dp)
             ) {
                 val xLabelSpace = 26.dp.toPx()
                 val chartHeight = size.height - xLabelSpace
@@ -71,23 +97,24 @@ fun WeeklyChart(
         }
 
         Canvas(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp)
+                .padding(top = 12.dp, end = 10.dp)
         ) {
             // y position of label
             val xLabelSpace = 26.dp.toPx()
             val chartHeight = size.height - xLabelSpace
 
             // decide the x position of each point in the chart (size.width is the width of canvas)
-            val spacing = size.width / (chartData.size - 1)
+            val spacing = if (animatedChartData.size == 1) 0f else size.width / (animatedChartData.size - 1)
 
             //map from data to coordinates
-            val points = chartData.mapIndexed { index, point ->
+            val points = animatedChartData.mapIndexed { index, point ->
                 Offset(
                     // (i = 0 => x = 0, i = 1 => x = 100, i = 2 => x = 200,...)
-                    x = spacing * index,
-                    y = size.height - (point.value / max) * size.height
+                    x = if (animatedChartData.size == 1) size.width / 2f else spacing * index,
+                    y = chartHeight - (point.value / max) * chartHeight
                 )
             }
 
@@ -167,7 +194,7 @@ fun WeeklyChart(
             }
 
             //draw x label
-            chartData.forEachIndexed { index, item ->
+            animatedChartData.forEachIndexed { index, item ->
 
                 val point = points[index]
 
@@ -182,7 +209,7 @@ fun WeeklyChart(
                     topLeft = Offset(
                         x = (point.x - result.size.width / 2f).coerceIn(
                             0f,
-                            size.width - result.size.width
+                            size.width - result.size.width / 1.4f
                         ), //use coerceIn to avoid overflow of text
                         y = chartHeight + 8.dp.toPx()
                     )
@@ -267,7 +294,7 @@ private fun formatMinutes(value: Float): String {
     val minute = value.toInt() % 60
 
     return when {
-        hour == 0 && minute == 0 -> "${0}h"
+        hour == 0 && minute == 0 -> "0"
         hour == 0 -> "${minute}m"
         minute == 0 -> "${hour}h"
         else -> "${hour}h"
@@ -291,7 +318,8 @@ fun PreviewWeeklyChart() {
             ChartPoint("Sun", 200f)
         )
         WeeklyChart(
-            chartData = weeklyData
+            chartData = weeklyData,
+            modifier = Modifier.border(1.dp, Color.Black)
         )
     }
 }

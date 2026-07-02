@@ -100,7 +100,7 @@ fun HomeScreen(
             }
         ) { innerPadding ->
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .padding(top = innerPadding.calculateTopPadding())
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
