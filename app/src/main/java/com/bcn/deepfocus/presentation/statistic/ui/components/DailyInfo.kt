@@ -11,10 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Fireplace
-import androidx.compose.material.icons.rounded.HourglassTop
 import androidx.compose.material.icons.rounded.InsertChart
-import androidx.compose.material.icons.rounded.Stars
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bcn.deepfocus.R
 import com.bcn.deepfocus.model.statistic.domain.entities.DailyFocusSummary
-import kotlin.math.roundToInt
+import com.bcn.deepfocus.utils.formatDuration
 
 @Composable
 fun DailyInfo(
@@ -38,10 +35,12 @@ fun DailyInfo(
     dailyFocusSummary: DailyFocusSummary?
 ) {
     val focusRatio = dailyFocusSummary?.let {
-        it.totalFocusSeconds / (it.totalFocusSeconds + it.totalBreakSeconds)
-    } ?: 0
+        (it.totalFocusSeconds / (it.totalFocusSeconds + it.totalBreakSeconds).toFloat()) * 100
+    } ?: 0f
     val compareRatio = dailyFocusSummary?.let {
-        (it.totalFocusSeconds / previousTotalFocus.toFloat()) * 100
+        if (previousTotalFocus > 0) {
+            (it.totalFocusSeconds / previousTotalFocus.toFloat()) * 100
+        } else -1f
     } ?: 0f
 
     Box(
@@ -67,20 +66,22 @@ fun DailyInfo(
             }
 
             if (compareRatio > 100) {
-                Text("> ${(compareRatio - 100).let { (it * 100).roundToInt() / 100f }}% ${stringResource(R.string.compare_to_yesterday)}")
+                Text("> ${(compareRatio - 100).let { "%.2f".format(it) }}% ${stringResource(R.string.compare_to_yesterday)}")
             } else if (compareRatio.equals(0f)) {
                 Text(stringResource(R.string.no_session_yet))
+            } else if (compareRatio.equals(-1f)) {
+                Text(stringResource(R.string.no_session_yesterday))
             } else {
-                Text("< ${compareRatio.let { (it * 100).roundToInt() / 100f }}% ${stringResource(R.string.compare_to_yesterday)}")
+                Text("< ${compareRatio.let { "%.2f".format(it) }}% ${stringResource(R.string.compare_to_yesterday)}")
             }
 
             HorizontalDivider(thickness = 0.5.dp, color = Color.Gray)
 
-            Text("${stringResource(R.string.focus_time)}: ${dailyFocusSummary?.totalFocusSeconds ?: 0}m ")
+            Text("${stringResource(R.string.focus_time)}: ${formatDuration(dailyFocusSummary?.totalFocusSeconds ?: 0)} ")
 
             HorizontalDivider(thickness = 0.5.dp, color = Color.Gray)
 
-            Text("${stringResource(R.string.break_time)}: ${dailyFocusSummary?.totalBreakSeconds ?: 0}")
+            Text("${stringResource(R.string.break_time)}: ${formatDuration(dailyFocusSummary?.totalBreakSeconds ?: 0)}")
 
             HorizontalDivider(thickness = 0.5.dp, color = Color.Gray)
 
@@ -92,7 +93,7 @@ fun DailyInfo(
 
             HorizontalDivider(thickness = 0.5.dp, color = Color.Gray)
 
-            Text("${stringResource(R.string.focus_efficiency)}: $focusRatio")
+            Text("${stringResource(R.string.focus_efficiency)}: ${"%.2f".format(focusRatio)}%")
         }
     }
 }

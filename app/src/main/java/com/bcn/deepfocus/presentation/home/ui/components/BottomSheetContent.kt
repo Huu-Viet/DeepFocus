@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -123,7 +124,7 @@ fun BottomSheetContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            onContentSelected(focusSet)
+                            onCustomFocusSetSelected(focusSet)
                         }
                         .padding(vertical = 12.dp)
                         .border(
@@ -162,6 +163,12 @@ fun BottomSheetContent(
                                 onCustomFocusSetSelected(focusSet)
                             }
                         )
+
+                        IconButton(
+                            onClick = {onContentSelected(focusSet)}
+                        ) {
+                            Icon(imageVector = Icons.Outlined.Settings, contentDescription = null)
+                        }
 
                         IconButton(
                             onClick = {onDeleteItem(focusSet.id)}

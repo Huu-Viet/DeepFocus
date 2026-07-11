@@ -9,6 +9,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.bcn.deepfocus.core.ui.theme.LanguageMode
+import com.bcn.deepfocus.core.ui.theme.ThemeMode
 import com.bcn.deepfocus.presentation.custom.ui.TimeCustomScreen
 import com.bcn.deepfocus.presentation.statistic.ui.StatisticScreen
 import com.bcn.deepfocus.presentation.home.ui.HomeScreen
@@ -18,7 +20,11 @@ import com.bcn.deepfocus.utils.Key
 @Composable
 fun Navigation(
     modifier: Modifier,
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
+    languageMode: LanguageMode,
+    onLanguageModeChange: (LanguageMode) -> Unit
 ) {
     NavHost(
         navController = navHostController,
@@ -43,7 +49,13 @@ fun Navigation(
         composable (
             route = Route.Setting().route
         ) {
-            SettingScreen()
+            SettingScreen(
+                modifier = modifier,
+                themeMode = themeMode,
+                onThemeModeChange = onThemeModeChange,
+                languageMode = languageMode,
+                onLanguageModeChange = onLanguageModeChange
+            )
         }
 
         composable (

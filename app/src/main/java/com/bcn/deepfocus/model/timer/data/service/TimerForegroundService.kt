@@ -186,7 +186,8 @@ class TimerForegroundService: Service() {
 
         sessionState = sessionState.copy(
             remainingSeconds = sessionState.totalSeconds,
-            isRunning = false
+            isRunning = false,
+            timerPhase = TimerPhase.FOCUS
         )
         timerRepo.updateTimer(sessionState)
 

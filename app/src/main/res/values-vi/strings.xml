@@ -19,6 +19,17 @@
     <string name="today_focus_time">T.gian tập trung hôm nay</string>
     <string name="compare_to_yesterday">so với hôm qua</string>
 
+    <string name="setting">Cài đặt</string>
+    <string name="appearance">Giao diện</string>
+    <string name="theme">Chủ đề</string>
+    <string name="theme_system">Theo hệ thống</string>
+    <string name="theme_light">Sáng</string>
+    <string name="theme_dark">Tối</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="language_english">Tiếng Anh</string>
+    <string name="language_vietnamese">Tiếng Việt</string>
+    <string name="preferences">Tùy chọn</string>
+
     <!--  ACTION  -->
     <string name="add">Thêm</string>
     <string name="update">Cập nhật</string>
@@ -27,4 +38,5 @@
 
     <!--  Explanation  -->
     <string name="no_session_yet">Hôm nay bạn chưa bắt đầu phiên nào.</string>
+    <string name="no_session_yesterday">Một khởi đầu mới hôm nay!</string>
 </resources>

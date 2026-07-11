@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay
@@ -57,6 +56,7 @@ import com.bcn.deepfocus.presentation.home.ui.components.TimeCircle
 import com.bcn.deepfocus.presentation.home.viewmodel.HomeViewModel
 import com.bcn.deepfocus.core.ui.theme.DeepFocusTheme
 import com.bcn.deepfocus.navigation.Route
+import com.bcn.deepfocus.presentation.home.model.TimerPhase
 import com.bcn.deepfocus.presentation.home.ui.components.BottomSheetContent
 import com.bcn.deepfocus.utils.toTimerText
 
@@ -82,8 +82,7 @@ fun HomeScreen(
         label = ""
     )
 
-    DeepFocusTheme {
-        Scaffold(
+    Scaffold(
             topBar = {
                 TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -125,7 +124,9 @@ fun HomeScreen(
                         Spacer(Modifier.padding(4.dp))
 
                         Text(
-                            text = stringResource(R.string.focus_time),
+                            text =  if (timerState.value.timerPhase == TimerPhase.FOCUS) {
+                                stringResource(R.string.focus_time)
+                            } else {stringResource(R.string.break_time)},
                             fontSize = 18.sp,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
@@ -299,4 +300,3 @@ fun HomeScreen(
             }
         }
     }
-}

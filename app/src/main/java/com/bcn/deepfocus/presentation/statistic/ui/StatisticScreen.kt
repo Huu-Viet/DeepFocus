@@ -49,8 +49,7 @@ fun StatisticScreen(
     val today = LocalDate.now()
     val scrollState = rememberScrollState()
 
-    DeepFocusTheme{
-        Scaffold(
+    Scaffold(
             topBar = {
                 TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -91,5 +90,4 @@ fun StatisticScreen(
                 }
             }
         }
-    }
 }

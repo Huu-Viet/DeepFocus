@@ -2,8 +2,10 @@ package com.bcn.deepfocus
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.os.LocaleList
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -28,15 +30,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsControllerCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bcn.deepfocus.core.ui.components.BottomNavigationBar
+import com.bcn.deepfocus.core.ui.theme.DeepFocusTheme
+import com.bcn.deepfocus.core.ui.theme.LanguageMode
+import com.bcn.deepfocus.core.ui.theme.ThemeMode
 import com.bcn.deepfocus.navigation.Navigation
 import com.bcn.deepfocus.navigation.NavigationItem
 import com.bcn.deepfocus.navigation.Route
-import com.bcn.deepfocus.core.ui.theme.DeepFocusTheme
+import com.bcn.deepfocus.presentation.setting.viewmodel.SettingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -46,6 +51,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val settingViewModel: SettingViewModel = hiltViewModel()
+            val themeMode by settingViewModel.themeMode.collectAsStateWithLifecycle()
+            val languageMode by settingViewModel.languageMode.collectAsStateWithLifecycle()
             val navigationItems = listOf(
                 NavigationItem(
                     title = "Home",
@@ -63,8 +71,9 @@ class MainActivity : ComponentActivity() {
                     route = Route.Setting().route
                 ),
             )
-            DeepFocusTheme {
+            DeepFocusTheme(themeMode = themeMode) {
                 RequestNotificationPermissionOnStart()
+                LanguageUpdater(languageMode)
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute =navBackStackEntry?.destination?.route
@@ -85,12 +94,43 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     Navigation(
                         modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
-                        navHostController = navController
+                        navHostController = navController,
+                        themeMode = themeMode,
+                        onThemeModeChange = settingViewModel::onThemeModeChange,
+                        languageMode = languageMode,
+                        onLanguageModeChange = settingViewModel::onLanguageModeChange
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun LanguageUpdater(languageMode: LanguageMode) {
+    val activity = LocalContext.current as ComponentActivity
+
+    LaunchedEffect(languageMode) {
+        val targetLocale = when (languageMode) {
+            LanguageMode.VIETNAMESE -> java.util.Locale("vi")
+            LanguageMode.ENGLISH -> java.util.Locale.ENGLISH
+        }
+
+        if (activity.resources.configuration.locales[0].language != targetLocale.language) {
+            updateActivityLocale(activity, targetLocale)
+        }
+    }
+}
+
+private fun updateActivityLocale(activity: ComponentActivity, locale: java.util.Locale) {
+    val configuration = Configuration(activity.resources.configuration)
+    java.util.Locale.setDefault(locale)
+    configuration.setLocale(locale)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        configuration.setLocales(LocaleList(locale))
+    }
+    activity.resources.updateConfiguration(configuration, activity.resources.displayMetrics)
+    activity.recreate()
 }
 
 @Composable

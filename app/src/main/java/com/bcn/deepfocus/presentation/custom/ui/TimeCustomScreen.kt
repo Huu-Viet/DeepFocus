@@ -63,8 +63,7 @@ fun TimeCustomScreen(
         }
     }
 
-    DeepFocusTheme {
-        Scaffold(
+    Scaffold(
             topBar = {
                 TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -161,7 +160,6 @@ fun TimeCustomScreen(
             }
         }
     }
-}
 
 @Preview(showBackground = true)
 @Composable
