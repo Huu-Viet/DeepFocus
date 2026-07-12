@@ -18,6 +18,9 @@
     <string name="focus_efficiency">Hiệu quả tập trung</string>
     <string name="today_focus_time">T.gian tập trung hôm nay</string>
     <string name="compare_to_yesterday">so với hôm qua</string>
+    <string name="focus_more_than_yesterday">Bạn đã tập trung %1$s nhiều hơn hôm qua</string>
+    <string name="focus_less_than_yesterday">Bạn đã tập trung %1$s ít hơn hôm qua</string>
+    <string name="focus_same_as_yesterday">Bạn đã tập trung bằng hôm qua</string>
 
     <string name="setting">Cài đặt</string>
     <string name="appearance">Giao diện</string>

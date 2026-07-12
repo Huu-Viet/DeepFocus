@@ -28,20 +28,33 @@ import com.bcn.deepfocus.R
 import com.bcn.deepfocus.model.statistic.domain.entities.DailyFocusSummary
 import com.bcn.deepfocus.utils.formatDuration
 
+private fun formatTimeText(totalSeconds: Int): String = formatDuration(totalSeconds)
+
 @Composable
 fun DailyInfo(
     modifier: Modifier = Modifier,
     previousTotalFocus: Int,
     dailyFocusSummary: DailyFocusSummary?
 ) {
+    val currentFocusSeconds = dailyFocusSummary?.totalFocusSeconds ?: 0
+    val totalBreakSeconds = dailyFocusSummary?.totalBreakSeconds ?: 0
     val focusRatio = dailyFocusSummary?.let {
-        (it.totalFocusSeconds / (it.totalFocusSeconds + it.totalBreakSeconds).toFloat()) * 100
+        (currentFocusSeconds / (currentFocusSeconds + totalBreakSeconds).toFloat()) * 100
     } ?: 0f
-    val compareRatio = dailyFocusSummary?.let {
-        if (previousTotalFocus > 0) {
-            (it.totalFocusSeconds / previousTotalFocus.toFloat()) * 100
-        } else -1f
-    } ?: 0f
+
+    val comparisonText = when {
+        dailyFocusSummary == null -> stringResource(R.string.no_session_yet)
+        previousTotalFocus <= 0 -> stringResource(R.string.no_session_yesterday)
+        else -> {
+            val differenceSeconds = currentFocusSeconds - previousTotalFocus
+            val formattedDifference = formatTimeText(kotlin.math.abs(differenceSeconds))
+            when {
+                differenceSeconds > 0 -> stringResource(R.string.focus_more_than_yesterday, formattedDifference)
+                differenceSeconds < 0 -> stringResource(R.string.focus_less_than_yesterday, formattedDifference)
+                else -> stringResource(R.string.focus_same_as_yesterday)
+            }
+        }
+    }
 
     Box(
         modifier = modifier
@@ -65,23 +78,15 @@ fun DailyInfo(
                 Text(stringResource(R.string.today_focus_time))
             }
 
-            if (compareRatio > 100) {
-                Text("> ${(compareRatio - 100).let { "%.2f".format(it) }}% ${stringResource(R.string.compare_to_yesterday)}")
-            } else if (compareRatio.equals(0f)) {
-                Text(stringResource(R.string.no_session_yet))
-            } else if (compareRatio.equals(-1f)) {
-                Text(stringResource(R.string.no_session_yesterday))
-            } else {
-                Text("< ${compareRatio.let { "%.2f".format(it) }}% ${stringResource(R.string.compare_to_yesterday)}")
-            }
+            Text(comparisonText)
 
             HorizontalDivider(thickness = 0.5.dp, color = Color.Gray)
 
-            Text("${stringResource(R.string.focus_time)}: ${formatDuration(dailyFocusSummary?.totalFocusSeconds ?: 0)} ")
+            Text("${stringResource(R.string.focus_time)}: ${formatTimeText(currentFocusSeconds)} ")
 
             HorizontalDivider(thickness = 0.5.dp, color = Color.Gray)
 
-            Text("${stringResource(R.string.break_time)}: ${formatDuration(dailyFocusSummary?.totalBreakSeconds ?: 0)}")
+            Text("${stringResource(R.string.break_time)}: ${formatTimeText(totalBreakSeconds)}")
 
             HorizontalDivider(thickness = 0.5.dp, color = Color.Gray)
 

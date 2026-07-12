@@ -17,6 +17,9 @@
     <string name="focus_efficiency">Focus Efficiency</string>
     <string name="today_focus_time">Today Focus Time</string>
     <string name="compare_to_yesterday">compare to yesterday</string>
+    <string name="focus_more_than_yesterday">You focused %1$s more than yesterday</string>
+    <string name="focus_less_than_yesterday">You focused %1$s less than yesterday</string>
+    <string name="focus_same_as_yesterday">You focused the same as yesterday</string>
 
     <string name="setting">Setting</string>
     <string name="appearance">Appearance</string>
