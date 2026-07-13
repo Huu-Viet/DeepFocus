@@ -41,5 +41,6 @@
     <!--  Explanation  -->
     <string name="no_session_yet">You haven\'t started any sessions today.</string>
     <string name="no_session_yesterday">A fresh start today!</string>
+    <string name="open_app">Open</string>
 
 </resources>

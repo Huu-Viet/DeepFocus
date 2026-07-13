@@ -1,10 +1,14 @@
 package com.bcn.deepfocus.model.timer.data.service
 
 import android.app.Notification
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.media.MediaPlayer
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import com.bcn.deepfocus.MainActivity
 import com.bcn.deepfocus.R
 import com.bcn.deepfocus.model.statistic.domain.entities.FocusSession
 import com.bcn.deepfocus.model.statistic.domain.repo.StatisticRepository
@@ -12,6 +16,7 @@ import com.bcn.deepfocus.model.timer.domain.entity.Timer
 import com.bcn.deepfocus.model.timer.domain.entity.TimerPhase
 import com.bcn.deepfocus.model.timer.domain.repo.TimerRepository
 import com.bcn.deepfocus.utils.Key
+import com.bcn.deepfocus.utils.formatDuration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +37,8 @@ class TimerForegroundService: Service() {
     lateinit var statisticRepo: StatisticRepository
     private var timerJob: Job? = null
     private var runningSession: FocusSession? = null
+    private var isForegroundStarted = false
+    private var alertPlayer: MediaPlayer? = null
     private var sessionState = Timer(
         focusSeconds = 25 * 60,
         breakSeconds = 5 * 60,
@@ -55,10 +62,6 @@ class TimerForegroundService: Service() {
             Key.TIMER_START -> {
                 val focusSeconds = intent.getIntExtra(Key.TIMER_FOCUS_DURATION, 25 * 60)
                 val breakSeconds = intent.getIntExtra(Key.TIMER_BREAK_DURATION, 5 * 60)
-                startForeground(
-                    Key.NOTIFICATION_TIMER_ID,
-                    createNotification(focusSeconds)
-                )
                 startTimer(focusSeconds, breakSeconds)
             }
 
@@ -76,6 +79,8 @@ class TimerForegroundService: Service() {
     override fun onDestroy() {
         timerJob?.cancel()
         serviceScope.cancel()
+        isForegroundStarted = false
+        releaseAlertPlayer()
         super.onDestroy()
     }
 
@@ -86,18 +91,35 @@ class TimerForegroundService: Service() {
         )
     }
 
-    private fun createNotification(
-        time: Int
-    ): Notification {
+    private fun createNotification(timer: Timer): Notification {
+        val phaseLabel = when (timer.timerPhase) {
+            TimerPhase.FOCUS -> getString(R.string.focus_time)
+            TimerPhase.BREAK -> getString(R.string.break_time)
+        }
+        val contentText = "$phaseLabel • ${formatDuration(timer.remainingSeconds)}"
 
-        return NotificationCompat.Builder(
+        //Intent to open the app from a notification
+        val openIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val openPendingIntent = PendingIntent.getActivity(
             this,
-            Key.NOTIFICATION_CHANNEL_ID,
+            0,
+            openIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+
+        return NotificationCompat.Builder(this, Key.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Deep Focus")
-            .setContentText(time.toString())
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(contentText)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(contentText))
+            .setOnlyAlertOnce(true)
             .setOngoing(true)
+            .setSilent(true)
+            .setSound(null)
+            .setProgress(timer.totalSeconds, timer.totalSeconds - timer.remainingSeconds, false)
+            .addAction(0, getString(R.string.open_app), openPendingIntent)
             .build()
     }
 
@@ -116,6 +138,9 @@ class TimerForegroundService: Service() {
             completedCycles = 0
         )
 
+        updateNotification(sessionState)
+        showPhaseAlert()
+
         timerJob = serviceScope.launch {
             val sessionId = statisticRepo.saveFocusSession(initialSession)
             runningSession = initialSession.copy(id = sessionId)
@@ -125,6 +150,7 @@ class TimerForegroundService: Service() {
             while (isActive) {
                 delay(1000)
 
+                val previousPhase = sessionState.timerPhase
                 val remaining = sessionState.remainingSeconds - 1
 
                 sessionState = if (remaining > 0) {
@@ -140,8 +166,11 @@ class TimerForegroundService: Service() {
                 }
 
                 timerRepo.updateTimer(sessionState)
-
-//                updateNotification(remaining)
+                val phaseChanged = previousPhase != sessionState.timerPhase
+                updateNotification(sessionState)
+                if (phaseChanged) {
+                    showPhaseAlert()
+                }
             }
         }
     }
@@ -157,6 +186,7 @@ class TimerForegroundService: Service() {
             isRunning = true
         )
         timerRepo.updateTimer(sessionState)
+        updateNotification(sessionState)
     }
 
     private fun moveToNextPhase(): Timer {
@@ -199,13 +229,49 @@ class TimerForegroundService: Service() {
                     statisticRepo.updateFocusSession(session)
                 }
             }
+            isForegroundStarted = false
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.cancel(Key.NOTIFICATION_TIMER_ID)
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
     }
 
-    private fun updateNotification(remaining: Int) {
-        TODO("Not yet implemented")
+    private fun updateNotification(timer: Timer) {
+        val foregroundNotification = createNotification(timer)
+        val manager = getSystemService(NotificationManager::class.java)
+
+        if (!isForegroundStarted) {
+            startForeground(Key.NOTIFICATION_TIMER_ID, foregroundNotification)
+            isForegroundStarted = true
+        } else {
+            manager.notify(Key.NOTIFICATION_TIMER_ID, foregroundNotification)
+        }
+    }
+
+    private fun showPhaseAlert() {
+        releaseAlertPlayer()
+        val player = MediaPlayer.create(this, R.raw.alarm) ?: return
+
+        alertPlayer = player
+        player.setOnCompletionListener {
+            releaseAlertPlayer()
+        }
+        player.setOnErrorListener { _, _, _ ->
+            releaseAlertPlayer()
+            true
+        }
+        player.start()
+    }
+
+    private fun releaseAlertPlayer() {
+        alertPlayer?.let { player ->
+            if (player.isPlaying) {
+                player.stop()
+            }
+            player.release()
+        }
+        alertPlayer = null
     }
 
     private fun FocusSession.addCompletedPhase(timer: Timer): FocusSession {
