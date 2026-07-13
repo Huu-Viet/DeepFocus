@@ -10,11 +10,13 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.bcn.deepfocus.MainActivity
 import com.bcn.deepfocus.R
+import com.bcn.deepfocus.model.custom.domain.entities.FocusSet
 import com.bcn.deepfocus.model.statistic.domain.entities.FocusSession
 import com.bcn.deepfocus.model.statistic.domain.repo.StatisticRepository
 import com.bcn.deepfocus.model.timer.domain.entity.Timer
 import com.bcn.deepfocus.model.timer.domain.entity.TimerPhase
 import com.bcn.deepfocus.model.timer.domain.repo.TimerRepository
+import com.bcn.deepfocus.presentation.home.model.EFocusPreset
 import com.bcn.deepfocus.utils.Key
 import com.bcn.deepfocus.utils.formatDuration
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,6 +50,11 @@ class TimerForegroundService: Service() {
         timerPhase = TimerPhase.FOCUS,
         completedCycles = 0
     )
+    private var currentSession = FocusSet(
+        id = EFocusPreset.DEFAULT.name,
+        focusMinute = EFocusPreset.DEFAULT.focusMinutes,
+        breakMinute = EFocusPreset.DEFAULT.breakMinutes
+    )
     private val serviceScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Default
     )
@@ -60,9 +67,10 @@ class TimerForegroundService: Service() {
         val action = intent?.action
         when(action) {
             Key.TIMER_START -> {
+                val id = intent.getStringExtra(Key.ID) ?: ""
                 val focusSeconds = intent.getIntExtra(Key.TIMER_FOCUS_DURATION, 25 * 60)
                 val breakSeconds = intent.getIntExtra(Key.TIMER_BREAK_DURATION, 5 * 60)
-                startTimer(focusSeconds, breakSeconds)
+                startTimer(id, focusSeconds, breakSeconds)
             }
 
             Key.TIMER_STOP -> {
@@ -123,7 +131,7 @@ class TimerForegroundService: Service() {
             .build()
     }
 
-    private fun startTimer(focusSeconds: Int, breakSeconds: Int) {
+    private fun startTimer(id: String, focusSeconds: Int, breakSeconds: Int) {
         timerJob?.cancel()
         val initialSession = createRunningSession()
         runningSession = initialSession
@@ -138,6 +146,12 @@ class TimerForegroundService: Service() {
             completedCycles = 0
         )
 
+        currentSession = FocusSet(
+            id = id,
+            focusMinute = focusSeconds / 60,
+            breakMinute = breakSeconds / 60
+        )
+
         updateNotification(sessionState)
         showPhaseAlert()
 
@@ -146,6 +160,7 @@ class TimerForegroundService: Service() {
             runningSession = initialSession.copy(id = sessionId)
 
             timerRepo.updateTimer(sessionState)
+            timerRepo.updateActiveSession(currentSession)
 
             while (isActive) {
                 delay(1000)
@@ -186,6 +201,7 @@ class TimerForegroundService: Service() {
             isRunning = true
         )
         timerRepo.updateTimer(sessionState)
+        timerRepo.updateActiveSession(currentSession)
         updateNotification(sessionState)
     }
 
@@ -220,6 +236,7 @@ class TimerForegroundService: Service() {
             timerPhase = TimerPhase.FOCUS
         )
         timerRepo.updateTimer(sessionState)
+        timerRepo.updateActiveSession(currentSession)
 
         serviceScope.launch {
             finishedSession?.let { session ->

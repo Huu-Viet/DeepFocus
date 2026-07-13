@@ -7,9 +7,10 @@ import com.bcn.deepfocus.utils.Key
 class TimerServiceManager(
     private val context: Context
 ) {
-    fun startTimer(focusSeconds: Int, breakSeconds: Int) {
+    fun startTimer(id: String, focusSeconds: Int, breakSeconds: Int) {
         val intent = Intent(context, TimerForegroundService::class.java).apply {
             action = Key.TIMER_START
+            putExtra(Key.ID, id)
             putExtra(Key.TIMER_FOCUS_DURATION, focusSeconds)
             putExtra(Key.TIMER_BREAK_DURATION, breakSeconds)
         }

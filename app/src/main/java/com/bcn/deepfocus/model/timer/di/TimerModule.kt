@@ -7,6 +7,7 @@ import com.bcn.deepfocus.model.timer.domain.usecase.StartTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.StopTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.WatchTimerUseCase
 import com.bcn.deepfocus.model.timer.data.service.TimerServiceManager
+import com.bcn.deepfocus.model.timer.domain.usecase.WatchActiveSessionUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,6 +25,7 @@ object TimerModule {
         return TimerRepoImpl(timerServiceManager)
     }
 
+    //UseCase
     @Provides
     fun provideStartTimerUseCase(
         timerRepo: TimerRepository
@@ -43,4 +45,9 @@ object TimerModule {
     fun provideWatchTimerUseCase(
         timerRepo: TimerRepository
     ) = WatchTimerUseCase(timerRepo)
+
+    @Provides
+    fun provideWatchActiveSessionUseCase(
+        timerRepo: TimerRepository
+    ) = WatchActiveSessionUseCase(timerRepo)
 }

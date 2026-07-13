@@ -8,6 +8,7 @@ import com.bcn.deepfocus.model.custom.domain.usecase.WatchAllFocusSetsUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.RestartTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.StartTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.StopTimerUseCase
+import com.bcn.deepfocus.model.timer.domain.usecase.WatchActiveSessionUseCase
 import com.bcn.deepfocus.model.timer.domain.usecase.WatchTimerUseCase
 import com.bcn.deepfocus.model.timer.domain.entity.TimerPhase as DomainTimerPhase
 import com.bcn.deepfocus.presentation.home.model.EFocusPreset
@@ -31,6 +32,7 @@ class HomeViewModel @Inject constructor(
     private val watchTimerUseCase: WatchTimerUseCase,
     private val watchAllFocusSetsUseCase: WatchAllFocusSetsUseCase,
     private val deleteFocusSetUseCase: DeleteFocusSetUseCase,
+    private val watchActiveSessionUseCase: WatchActiveSessionUseCase,
 ): ViewModel() {
 
     // Single source of truth for active focus/break duration
@@ -57,6 +59,15 @@ class HomeViewModel @Inject constructor(
 
     init {
         watchTimerData()
+        watchActiveSession()
+    }
+
+    private fun watchActiveSession() = viewModelScope.launch{
+        watchActiveSessionUseCase().collect { activeSession ->
+            _activeFocusSet.update {
+                activeSession
+            }
+        }
     }
 
     private fun watchTimerData() = viewModelScope.launch {
@@ -81,6 +92,7 @@ class HomeViewModel @Inject constructor(
         }
 
         startTimerUseCase(
+            _activeFocusSet.value.id,
             _activeFocusSet.value.focusMinute.toSecond(),
             _activeFocusSet.value.breakMinute.toSecond()
         )
